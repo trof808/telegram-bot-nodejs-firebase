@@ -1,0 +1,1 @@
+export const splitLines = (text) => text.split(/(?:\r\n|\r|\n)/g);
