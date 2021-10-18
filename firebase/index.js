@@ -1,4 +1,4 @@
-import { initializeApp, getApp } from "firebase/app";
+import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
 import { getFirestore } from "firebase/firestore";
 import { collection } from 'firebase/firestore';
@@ -12,3 +12,4 @@ export const storage = getStorage();
 export const database = getFirestore();
 
 export const plannerRef = collection(database, 'planner');
+export const transactionsRef = collection(database, 'transactions');

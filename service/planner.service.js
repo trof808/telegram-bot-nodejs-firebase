@@ -1,4 +1,4 @@
-import { getDocs, query, orderBy, limit } from "firebase/firestore";
+import { getDocs, query, orderBy, limit, where, Timestamp } from "firebase/firestore";
 import { plannerRef } from '../firebase/index.js';
 import { planConverter } from '../firebase/models/plan.js';
 
@@ -9,8 +9,12 @@ import { planConverter } from '../firebase/models/plan.js';
  * @returns 
  */
 export const getCurrentPeriodPlan = async () => {
-    const q = query(plannerRef.withConverter(planConverter), orderBy("date"), limit(1));
+    const q = query(
+        plannerRef.withConverter(planConverter),
+        where("date", "<=", Timestamp.now()),
+        orderBy("date", "desc"),
+        limit(1)
+    );
     const querySnapshot = await getDocs(q);
-    const currentPeriodPlan = querySnapshot.docs[0].data();
-    return currentPeriodPlan;
+    return querySnapshot.docs[0].data();
 }

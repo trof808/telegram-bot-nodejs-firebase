@@ -10,12 +10,15 @@ import { TINKOFF_COLUMNS } from './constants.js';
 import { periodStat } from './htmlMarkups/periodStat.js';
 import format from 'date-fns/format/index.js';
 import { getCurrentPeriodPlan } from './service/planner.service.js';
+import { getTransactionsForPeriod } from './service/transaction.service.js';
+import { Statistic } from './firebase/models/periodStatistic.js';
 
 const bot = new Telegraf(process.env.BOT_TOKEN)
 
 const getCurrentPeriodStat = async () => {
     const currentPeriodPlan = await getCurrentPeriodPlan();
-    return currentPeriodPlan;
+    const transactions = await getTransactionsForPeriod(currentPeriodPlan.date);
+    return new Statistic(transactions, currentPeriodPlan);
 }
 
 bot.start((ctx) => {
@@ -89,13 +92,15 @@ bot.on('text', async (ctx) => {
     console.log(lines);
     if (lines[0] === 'Текущий период') {
         ctx.deleteMessage();
-        const result = await getCurrentPeriodStat();
+        const stat = await getCurrentPeriodStat();
         ctx.reply(
             periodStat({
-                date: format(result.date.toDate(), 'dd.MM.yyyy'),
-                planned: result.fundsAmount,
-                notPlanned: result.leftToSpend,
-                incomeAmount: result.incomeAmount
+                date: format(stat.plan.date.toDate(), 'dd.MM.yyyy'),
+                planned: stat.plan.fundsAmount,
+                notPlanned: stat.plan.leftToSpend,
+                incomeAmount: stat.plan.incomeAmount,
+                onCard: stat.leftMoneyForPlan,
+                categories: stat.plan.fundPlan,
             }),
             {parse_mode: 'HTML'}
         );
